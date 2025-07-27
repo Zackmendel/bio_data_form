@@ -15,25 +15,32 @@ SCOPES = [
 
 # You'll need to create a service account and download the JSON key file
 # Place it in the same directory as this script
-SERVICE_ACCOUNT_FILE = 'service_account_key.json'
-
-# --------------------------------------------------------------------------------------------------------------
-SPREADSHEET_ID = 'your_spreadsheet_id_here'  # Replace with your actual spreadsheet ID                         ||
-# --------------------------------------------------------------------------------------------------------------
-
+# Configuration from Streamlit secrets
+SERVICE_ACCOUNT_FILE = st.secrets.get('SERVICE_ACCOUNT_FILE', 'service_account_key.json')
+SPREADSHEET_ID = st.secrets.get('SPREADSHEET_ID', 'your_spreadsheet_id_here')
 WORKSHEET_NAME = 'Staff Biodata'
 
 def get_google_sheets_client():
     """Initialize and return Google Sheets client"""
     try:
-        if not os.path.exists(SERVICE_ACCOUNT_FILE):
-            st.error(f"❌ Service account key file '{SERVICE_ACCOUNT_FILE}' not found!")
-            st.info("Please create a Google Cloud service account and download the JSON key file.")
-            return None
+        # Check if service account credentials are in secrets
+        if 'SERVICE_ACCOUNT_CREDENTIALS' in st.secrets:
+            # Use credentials from secrets
+            credentials_dict = st.secrets['SERVICE_ACCOUNT_CREDENTIALS']
+            credentials = service_account.Credentials.from_service_account_info(
+                credentials_dict, scopes=SCOPES
+            )
+        else:
+            # Fall back to file-based authentication
+            if not os.path.exists(SERVICE_ACCOUNT_FILE):
+                st.error(f"❌ Service account key file '{SERVICE_ACCOUNT_FILE}' not found!")
+                st.info("Please create a Google Cloud service account and download the JSON key file.")
+                return None
+            
+            credentials = service_account.Credentials.from_service_account_file(
+                SERVICE_ACCOUNT_FILE, scopes=SCOPES
+            )
         
-        credentials = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=SCOPES
-        )
         client = gspread.authorize(credentials)
         return client
     except Exception as e:
