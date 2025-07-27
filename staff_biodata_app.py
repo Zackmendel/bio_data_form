@@ -13,8 +13,6 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive'
 ]
 
-# You'll need to create a service account and download the JSON key file
-# Place it in the same directory as this script
 # Configuration from Streamlit secrets
 SERVICE_ACCOUNT_FILE = st.secrets.get('SERVICE_ACCOUNT_FILE', 'service_account_key.json')
 SPREADSHEET_ID = st.secrets.get('SPREADSHEET_ID', 'your_spreadsheet_id_here')
@@ -103,16 +101,16 @@ def get_all_data_from_sheets():
 st.title("EduRepublic Staff Biodata Collection")
 
 # Check if Google Sheets is properly configured
-if not os.path.exists(SERVICE_ACCOUNT_FILE):
+if not os.path.exists(SERVICE_ACCOUNT_FILE) and 'SERVICE_ACCOUNT_CREDENTIALS' not in st.secrets:
     st.warning("⚠️ Google Sheets not configured")
     st.info("""
     To use Google Sheets integration:
     1. Create a Google Cloud project
     2. Enable Google Sheets API
     3. Create a service account
-    4. Download the JSON key file as 'service_account_key.json'
-    5. Share your Google Sheet with the service account email
-    6. Update the SPREADSHEET_ID variable with your sheet ID
+    4. For deployment: Add SERVICE_ACCOUNT_CREDENTIALS and SPREADSHEET_ID to Streamlit secrets
+    5. For local development: Download the JSON key file as 'service_account_key.json'
+    6. Share your Google Sheet with the service account email
     """)
 
 # --- Biodata Form ---
